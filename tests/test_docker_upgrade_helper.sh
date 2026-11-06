@@ -1735,7 +1735,7 @@ echo "--- 测试 13: 恢复阶段全目标路径挂载安全性核验 ---"
     (
         cd "$T13_BKP"
         rm -f sha256sums.txt backup_manifest.txt
-        find . -type f | sort | while IFS= read -r f; do
+        find . -type f ! -name sha256sums.txt | sort | while IFS= read -r f; do
             clean_f="${f#./}"
             sha256sum "$clean_f"
         done > sha256sums.txt
@@ -1766,7 +1766,7 @@ echo "--- 测试 13: 恢复阶段全目标路径挂载安全性核验 ---"
     (
         cd "$T13_BKP"
         rm -f sha256sums.txt backup_manifest.txt
-        find . -type f | sort | while IFS= read -r f; do
+        find . -type f ! -name sha256sums.txt | sort | while IFS= read -r f; do
             clean_f="${f#./}"
             sha256sum "$clean_f"
         done > sha256sums.txt
