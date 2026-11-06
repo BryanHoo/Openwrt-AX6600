@@ -71,6 +71,7 @@ jobs:
   core:
     name: ${{inputs.WRT_SOURCE}}
     runs-on: ubuntu-latest
+    timeout-minutes: 240
     outputs:
       cache_prefix: ${{steps.initialize-cache.outputs.cache_prefix}}
       cache_key: ${{steps.initialize-cache.outputs.cache_key}}
@@ -210,12 +211,13 @@ jobs:
 
       - name: Update Feeds
         run: |
+          set -x
           cd ./wrt/
 
-          ./scripts/feeds update -a
-          ./scripts/feeds install -a
+          timeout -k 30s 20m ./scripts/feeds update -a
+          timeout -k 30s 10m ./scripts/feeds install -a
           # 额外强制安装缺失的 python 依赖
-          ./scripts/feeds install -f python3-pysocks python3-unidecode
+          timeout -k 30s 3m ./scripts/feeds install -f python3-pysocks python3-unidecode
 
 
       - name: Custom Packages
@@ -332,7 +334,7 @@ jobs:
         run: |
           cd ./wrt/
 
-          make download -j$(nproc)
+          timeout -k 30s 30m make download -j$(nproc) V=s
 
       - name: Compile Firmware
         if: env.WRT_TEST != 'true'
