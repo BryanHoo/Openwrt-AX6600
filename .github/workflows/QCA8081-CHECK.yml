@@ -62,5 +62,5 @@ jobs:
       WRT_BRANCH: owrt
       WRT_SOURCE: ones20250/immortalwrt_ipq
       WRT_PROFILE: ${{matrix.profile}}
-      WRT_TEST: 'false'
+      WRT_TEST: ${{ 'false' }}
       WRT_RELEASE: false

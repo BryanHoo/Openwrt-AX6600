@@ -3,11 +3,14 @@
 `qualcommax-qca8081-clock-fix.patch` backports OpenWrt
 [PR #24566](https://github.com/openwrt/openwrt/pull/24566), captured on
 2026-11-06. It contains commits
-`6985f61db8aeb2911a7e79515bace5690d35cd1b` and the PPE parent-selection
-commit recorded in the second mail header. Original authorship, commit
+`6985f61db8aeb2911a7e79515bace5690d35cd1b` and
+`d21c9d3b1b936ae392489ead075fda5719095e30`. Original authorship, commit
 messages and Signed-off-by trailers are retained. Only the include hunk's
 context was reduced to accommodate this fork's additional QCA PPE header;
 the added C code and GCC patches are unchanged.
+
+SHA256 of the adapted series:
+`7019d14259c56339936ad9fd30ef4b7881a247d81b90525d1923099def1bc6cb`.
 
 On IPQ601x the bootloader can leave port 5's TX RCG parent on the UNIPHY RX
 clock. Merely setting an already matching rate does not correct the parent,
