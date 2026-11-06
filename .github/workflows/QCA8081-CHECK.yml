@@ -1,0 +1,66 @@
+name: QCA8081 clock validation
+
+on:
+  pull_request:
+    paths:
+      - 'Patches/**'
+      - '.github/scripts/prepare-qca8081-clock-fix.sh'
+      - '.github/workflows/WRT-CORE.yml'
+      - '.github/workflows/QCA8081-CHECK.yml'
+      - 'tests/**'
+  workflow_dispatch:
+    inputs:
+      FULL_BUILD:
+        description: 'Compile PURE and PLUS firmware as artifacts (no release).'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  regression:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout PPE source
+        run: git clone --depth=1 --branch owrt https://github.com/ones20250/immortalwrt_ipq.git source
+      - name: Regression tests
+        run: |
+          for test in tests/test_*.sh; do
+            if [[ "$test" == tests/test_qca8081_clock_fix.sh ]]; then
+              bash "$test" "$PWD/source"
+            else
+              bash "$test"
+            fi
+          done
+      - name: Bash syntax
+        run: |
+          bash -n .github/scripts/prepare-qca8081-clock-fix.sh
+          bash -n tests/test_qca8081_clock_fix.sh
+
+  firmware:
+    if: github.event_name == 'workflow_dispatch' && inputs.FULL_BUILD
+    needs: regression
+    permissions:
+      contents: read
+      actions: write
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [PURE, PLUS]
+    uses: ./.github/workflows/WRT-CORE.yml
+    with:
+      WRT_CONFIG: IPQ60XX-WIFI-YES
+      WRT_THEME: bootstrap
+      WRT_NAME: OWRT
+      WRT_SSID: OWRT
+      WRT_WORD: '12345678'
+      WRT_IP: 192.168.10.1
+      WRT_PW: 无
+      WRT_REPO: https://github.com/ones20250/immortalwrt_ipq.git
+      WRT_BRANCH: owrt
+      WRT_SOURCE: ones20250/immortalwrt_ipq
+      WRT_PROFILE: ${{matrix.profile}}
+      WRT_TEST: 'false'
+      WRT_RELEASE: false

@@ -44,6 +44,11 @@ on:
       WRT_TEST:
         required: false
         type: string
+      WRT_RELEASE:
+        description: 'Publish a release; disable for PR validation builds.'
+        required: false
+        type: boolean
+        default: true
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
@@ -140,6 +145,11 @@ jobs:
           if [[ "$WRT_PROFILE" == "PLUS" ]]; then
             echo "src-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages" >> feeds.conf.default
           fi
+
+      - name: Fix QCA8081 Port Clocks
+        run: |
+          cd ./wrt/
+          bash "$GITHUB_WORKSPACE/.github/scripts/prepare-qca8081-clock-fix.sh"
 
       - name: Check Scripts
         run: |
@@ -419,7 +429,16 @@ jobs:
             echo "- Kernel: \`$WRT_KVER\`"
           } >> "$GITHUB_STEP_SUMMARY"
 
+      - name: Upload Validation Firmware
+        if: inputs.WRT_RELEASE == false
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-${{env.WRT_CONFIG}}-${{env.WRT_PROFILE}}-${{env.WRT_HASH}}
+          path: ./wrt/upload/
+          retention-days: 7
+
       - name: Release Firmware
+        if: inputs.WRT_RELEASE
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.WRT_CONFIG }}-${{ env.WRT_PROFILE }}-${{ env.WRT_INFO }}-${{ env.WRT_BRANCH }}-${{ env.WRT_DATE }}
